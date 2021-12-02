@@ -1,0 +1,90 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Object array with all information to create Azure Foundation neworking information."
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-10-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('networkSettings').virtualNetworks[copyIndex()].name]",
+      "location": "[parameters('networkSettings').virtualNetworks[copyIndex()].location]",
+      "copy": {
+        "name": "vNetLoop",
+        "count": "[length(parameters('networkSettings').virtualNetworks)]"
+      },
+      "properties": {
+        "addressSpace": {
+            "addressPrefixes": "[parameters('networkSettings').virtualNetworks[copyIndex()].addressPrefixes]"
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "2017-10-01",
+          "type": "virtualNetworkPeerings",
+          "name": "[concat(parameters('networkSettings').virtualNetworks[copyIndex()].name, '-to-', parameters('networkSettings').virtualNetworks[copyIndex()].peervNetName)]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Network/virtualNetworks/', parameters('networkSettings').virtualNetworks[copyIndex()].name)]"
+          ],
+          "comments": "This is the peering back to the Core subscription",
+          "properties": {
+            "allowVirtualNetworkAccess": true,
+            "allowForwardedTraffic": true,
+            "allowGatewayTransit": false,
+            "useRemoteGateways": true,
+            "remoteVirtualNetwork": {
+              "id": "[resourceId(parameters('networkSettings').virtualNetworks[copyIndex()].peerSubscriptionID, parameters('networkSettings').virtualNetworks[copyIndex()].peerARGName,'Microsoft.Network/virtualNetworks', parameters('networkSettings').virtualNetworks[copyIndex()].peervNetName)]"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2018-05-01",
+      "name": "[concat('nestedTemplate', '-peering-', parameters('networkSettings').virtualNetworks[copyIndex()].peervNetName)]",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('networkSettings').virtualNetworks[copyIndex()].peerARGName]",
+      "subscriptionID": "[parameters('networkSettings').virtualNetworks[copyIndex()].peerSubscriptionID]",
+      "copy": {
+        "name": "vNetPeerLoop",
+        "count": "[length(parameters('networkSettings').virtualNetworks)]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('networkSettings').virtualNetworks[copyIndex()].name)]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "apiVersion": "2017-10-01",
+              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+              "comments": "This is the peering from the Core Subscription",
+              "location": "[resourceGroup().location]",
+              "name": "[concat(parameters('networkSettings').virtualNetworks[copyIndex()].peervNetName, '/', parameters('networkSettings').virtualNetworks[copyIndex()].peervNetName, '-to-', parameters('networkSettings').virtualNetworks[copyIndex()].name)]",
+              "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                  "id": "[resourceId(parameters('networkSettings').virtualNetworks[copyIndex()].ARGname, 'Microsoft.Network/virtualNetworks', parameters('networkSettings').virtualNetworks[copyIndex()].name)]"
+                }
+              }
+            }
+          ]
+        },
+        "parameters": {}
+      }
+    }
+  ]
+}

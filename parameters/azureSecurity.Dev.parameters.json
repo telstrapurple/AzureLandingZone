@@ -1,0 +1,24 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "securitySettings": {
+            "value": "On"
+        },
+        "emailContact": {
+            "value": "<<email>>"
+        },
+        "securityPhoneNumber": {
+            "value": "<<phone>>"
+        },
+        "logAnalyticsWorkspaceName": {
+            "value": "<<customerCode>>-SYD-HUB-LAW-001"
+        },
+        "logAnalyticsResourceGroup": {
+            "value": "<<customerCode>>-SYD-HUB-ARG-Administration"
+        },
+        "logAnalyticsSubscriptionID": {
+            "value": "<<HubSubscriptionID>>"
+        }
+    }
+}

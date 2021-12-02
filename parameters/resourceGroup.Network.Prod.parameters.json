@@ -1,0 +1,66 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionID": {
+            "value": "<<ProdSubscriptionID>>"
+        },
+        "rgName": {
+            "value": "<<customerCode>>-SYD-PRD-ARG-Network"
+        },
+        "rgLocation": {
+            "value": "Australia East"
+        },
+        "rgTags": {
+            "value": {
+                "Environment": "Production",
+                "Owner": "<<customerCode>> IT"
+            }
+        },
+        "rgPermissions": {
+            "value": [{
+                    "builtInRoleType": "Contributor",
+                    "roleid": "<<azureADGroupID>>"
+                }]
+        },
+        "boolAzureADRBAC": {
+            "value": false
+        },
+        "boolResourceLock": {
+            "value": false
+        },
+        "nestedTemplates": {
+            "value": {
+                "deploymentsLoop1": [
+                    {
+                        "name": "networkSecurityGroups",
+                        "template_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/networking.networkSecurityGroup.json",
+                        "template_parameters_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/parameters/networking.networkSecurityGroup.Prod.parameters.json"
+                    }
+                ],
+                "deploymentsLoop2": [
+                    {
+                        "name": "network",
+                        "template_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/networking.json",
+                        "template_parameters_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/parameters/networking.Prod.parameters.json"
+                    }
+                ],
+                "deploymentsLoop3": [
+                    {
+                        "name": "vNetPeering",
+                        "template_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/networking.vNetPeering.json",
+                        "template_parameters_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/parameters/networking.vNetPeering.Prod.parameters.json"
+                    },
+                    {
+                        "name": "azurePolicy",
+                        "template_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/azurePolicy.json",
+                        "template_parameters_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/parameters/azurePolicy.Network.Prod.parameters.json"
+                    }
+                ]
+            }
+        },
+        "_sasToken": {
+            "value": "<<sasTokenfromPreCreatedStorageAccount>>"
+        }
+    }
+}

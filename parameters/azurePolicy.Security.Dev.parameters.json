@@ -1,0 +1,26 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyAssignments": {
+            "value": [
+                {
+                    "boolDeploy": false,
+                    "name": "SecurityResourcesOnly",
+                    "displayName": "<<customerCode>>-SYD-DEV-ARG-Security/Security Resources Only",
+                    "policyDefinition": "Allowed resource types",
+                    "scope": "/subscriptions/<<DevSubscriptionID>>/resourceGroups/<<customerCode>>-SYD-DEV-ARG-Security",
+                    "notScopes": [],
+                    "description": "Applies restriction so only Azure Security resources can be created.",
+                    "parameters": {
+                        "listOfResourceTypesAllowed": {
+                            "value": [
+                                "Microsoft.KeyVault/vaults"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

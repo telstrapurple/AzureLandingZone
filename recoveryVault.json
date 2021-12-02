@@ -1,0 +1,164 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "recoverySettings": {
+            "type": "object",
+            "metadata": {
+                "description": "Object array with all information to create Azure Foundation Recovery Vault information."
+            }
+        },
+        "logAnalyticsWorkspaceName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of log analytics workspace."
+            }
+        },
+        "logAnalyticsResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of log analytics workspace resource group."
+            }
+        },
+        "logAnalyticsSubscriptionID": {
+            "type": "string",
+            "metadata": {
+                "description": "Subscription ID of log analytics workspace."
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.RecoveryServices/vaults",
+            "apiVersion": "2015-11-10",
+            "name": "[parameters('recoverySettings').recoveryVaults[copyIndex()].vaultName]",
+            "location": "[parameters('recoverySettings').recoveryVaults[copyIndex()].location]",
+            "copy": {
+                "name": "recoveryVaultLoop",
+                "count": "[length(parameters('recoverySettings').recoveryVaults)]"
+            },
+            "sku": {
+                "name": "RS0",
+                "tier": "Standard"
+            },
+            "properties": {},
+            "resources": [
+                {
+                    "type": "Microsoft.RecoveryServices/vaults/providers/diagnosticSettings",
+                    "name": "[concat(parameters('recoverySettings').recoveryVaults[copyIndex()].vaultName, '/microsoft.insights/', 'diagnostics')]",
+                    "apiVersion": "2017-05-01-preview",
+                    "properties": {
+                        "name": "diagnostics",
+                        "storageAccountId": "[resourceId(parameters('recoverySettings').recoveryVaults[copyIndex()].storageAccountARG,'Microsoft.Storage/storageAccounts',parameters('recoverySettings').recoveryVaults[copyIndex()].storageAccount)]",
+                        "workspaceId": "[resourceId(parameters('logAnalyticsSubscriptionID'), parameters('logAnalyticsResourceGroup'),'microsoft.operationalinsights/workspaces/', parameters('logAnalyticsWorkspaceName'))]",
+                        "logs": [
+                            {
+                                "category": "AzureBackupReport",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "days": "[parameters('recoverySettings').recoveryVaults[copyIndex()].daysLogged]",
+                                    "enabled": false
+                                }
+                            },
+                            {
+                                "category": "AzureSiteRecoveryJobs",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "days": "[parameters('recoverySettings').recoveryVaults[copyIndex()].daysLogged]",
+                                    "enabled": false
+                                }
+                            },
+                            {
+                                "category": "AzureSiteRecoveryEvents",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "days": "[parameters('recoverySettings').recoveryVaults[copyIndex()].daysLogged]",
+                                    "enabled": false
+                                }
+                            }
+                        ],
+                        "metrics": []
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.RecoveryServices/vaults/',parameters('recoverySettings').recoveryVaults[copyIndex()].vaultName)]"
+                    ]
+                }
+            ]
+        },
+        {
+            "apiVersion": "2015-11-10",
+            "name": "[concat(parameters('recoverySettings').recoveryVaults[copyIndex()].vaultName, '/', parameters('recoverySettings').recoveryVaults[copyIndex()].policyName)]",
+            "type": "Microsoft.RecoveryServices/vaults/backupPolicies",
+            "copy": {
+                "name": "recoveryVaultPoliciesLoop",
+                "count": "[length(parameters('recoverySettings').recoveryVaults)]"
+            },
+            "dependsOn": [
+                "recoveryVaultLoop"
+            ],
+            "location": "[parameters('recoverySettings').recoveryVaults[copyIndex()].location]",
+            "properties": {
+                "backupManagementType": "AzureIaasVM",
+                "schedulePolicy": {
+                    "scheduleRunFrequency": "Daily",
+                    "scheduleRunDays": null,
+                    "scheduleRunTimes": "[parameters('recoverySettings').recoveryVaults[copyIndex()].scheduleRunTimes]",
+                    "schedulePolicyType": "SimpleSchedulePolicy"
+                },
+                "retentionPolicy": {
+                    "dailySchedule": {
+                        "retentionTimes": "[parameters('recoverySettings').recoveryVaults[copyIndex()].scheduleRunTimes]",
+                        "retentionDuration": {
+                            "count": "[parameters('recoverySettings').recoveryVaults[copyIndex()].dailyRetentionDurationCount]",
+                            "durationType": "Days"
+                        }
+                    },
+                    "weeklySchedule": {
+                        "daysOfTheWeek": "[parameters('recoverySettings').recoveryVaults[copyIndex()].daysOfTheWeek]",
+                        "retentionTimes": "[parameters('recoverySettings').recoveryVaults[copyIndex()].scheduleRunTimes]",
+                        "retentionDuration": {
+                            "count": "[parameters('recoverySettings').recoveryVaults[copyIndex()].weeklyRetentionDurationCount]",
+                            "durationType": "Weeks"
+                        }
+                    },
+                    "monthlySchedule": {
+                        "retentionScheduleFormatType": "Daily",
+                        "retentionScheduleDaily": {
+                            "daysOfTheMonth": [
+                                {
+                                    "date": 1,
+                                    "isLast": false
+                                }
+                            ]
+                        },
+                        "retentionScheduleWeekly": null,
+                        "retentionTimes": "[parameters('recoverySettings').recoveryVaults[copyIndex()].scheduleRunTimes]",
+                        "retentionDuration": {
+                            "count": "[parameters('recoverySettings').recoveryVaults[copyIndex()].monthlyRetentionDurationCount]",
+                            "durationType": "Months"
+                        }
+                    },
+                    "yearlySchedule": {
+                        "retentionScheduleFormatType": "Daily",
+                        "monthsOfYear": "[parameters('recoverySettings').recoveryVaults[copyIndex()].monthsOfYear]",
+                        "retentionScheduleDaily": {
+                            "daysOfTheMonth": [
+                                {
+                                    "date": 1,
+                                    "isLast": false
+                                }
+                            ]
+                        },
+                        "retentionScheduleWeekly": null,
+                        "retentionTimes": "[parameters('recoverySettings').recoveryVaults[copyIndex()].scheduleRunTimes]",
+                        "retentionDuration": {
+                            "count": "[parameters('recoverySettings').recoveryVaults[copyIndex()].yearlyRetentionDurationCount]",
+                            "durationType": "Years"
+                        }
+                    },
+                    "retentionPolicyType": "LongTermRetentionPolicy"
+                }
+            }
+        }
+    ]
+}

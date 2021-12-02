@@ -1,0 +1,55 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionID": {
+            "value": "<<ProdSubscriptionID>>"
+        },
+        "rgName": {
+            "value": "<<customerCode>>-SYD-PRD-ARG-Administration"
+        },
+        "rgLocation": {
+            "value": "Australia East"
+        },
+        "rgTags": {
+            "value": {
+                "Environment": "Production",
+                "Owner": "<<customerCode>> IT"
+            }
+        },
+        "rgPermissions": {
+            "value": [{
+                    "builtInRoleType": "Contributor",
+                    "roleid": "<<azureADGroupID>>"
+                }]
+        },
+        "boolAzureADRBAC": {
+            "value": false
+        },
+        "boolResourceLock": {
+            "value": false
+        },
+        "nestedTemplates": {
+            "value": {
+                "deploymentsLoop1": [
+                    {
+                        "name": "storageAccounts",
+                        "template_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/storageAccount.json",
+                        "template_parameters_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/parameters/storageAccount.Prod.parameters.json"
+                    }
+                ],
+                "deploymentsLoop2": [
+                    {
+                        "name": "azurePolicy",
+                        "template_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/azurePolicy.json",
+                        "template_parameters_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/parameters/azurePolicy.Administration.Prod.parameters.json"
+                    }
+                ],
+                "deploymentsLoop3": []
+            }
+        },
+        "_sasToken": {
+            "value": "<<sasTokenfromPreCreatedStorageAccount>>"
+        }
+    }
+}

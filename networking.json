@@ -1,0 +1,69 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Object array with all information to create Azure Foundation neworking information."
+      }
+    },
+    "subnetsURI": {
+      "type": "string",
+      "metadata": {
+        "description": "The URI to the subnets output json template file."
+      }
+    },
+    "_sasToken": {
+      "type": "string",
+      "metadata": {
+        "description": "The secure SAS token to the nested template."
+      }
+    }
+  },
+  "variables": {
+    "subnetsURI": "[concat(parameters('subnetsURI'),parameters('_sasToken'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-10-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('networkSettings').virtualNetworks[copyIndex()].name]",
+      "location": "[parameters('networkSettings').virtualNetworks[copyIndex()].location]",
+      "dependsOn": [
+        "[concat('nestedSubnets-', copyIndex())]"
+      ],
+      "copy": {
+        "name": "vNetLoop",
+        "count": "[length(parameters('networkSettings').virtualNetworks)]"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": "[parameters('networkSettings').virtualNetworks[copyIndex()].addressPrefixes]"
+        },
+        "subnets": "[reference(concat('nestedSubnets-', copyIndex())).outputs.result.value]"
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "[concat('nestedSubnets-', copyIndex())]",
+      "type": "Microsoft.Resources/deployments",
+      "copy": {
+        "name": "subnetLoop",
+        "count": "[length(parameters('networkSettings').virtualNetworks)]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('subnetsURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "subnets": {
+            "value": "[parameters('networkSettings').virtualNetworks[copyIndex()].subnets]"
+          }
+        }
+      }
+    }
+  ]
+}

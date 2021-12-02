@@ -1,0 +1,39 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageSettings": {
+            "type": "object",
+            "metadata": {
+                "description": "Object array with all information to create Azure Foundation storage information."
+            }
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "name": "[parameters('storageSettings').storageAccounts[copyIndex()].name]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "location": "[parameters('storageSettings').storageAccounts[copyIndex()].location]",
+            "copy": {
+                "name": "storageLoop",
+                "count": "[length(parameters('storageSettings').storageAccounts)]"
+            },
+            "tags": {
+                "storageType": "[parameters('storageSettings').storageAccounts[copyIndex()].sku]",
+                "version": "[if(equals(parameters('storageSettings').storageAccounts[copyIndex()].kind, 'StorageV2'), 'Version2', 'Version1')]"
+
+            },
+            "apiVersion": "2017-10-01",
+            "sku": {
+                "name": "[parameters('storageSettings').storageAccounts[copyIndex()].sku]"
+            },
+            "kind": "[parameters('storageSettings').storageAccounts[copyIndex()].kind]",
+            "properties":{
+                "supportsHttpsTrafficOnly": "[parameters('storageSettings').storageAccounts[copyIndex()].httpsOnly]"
+            }
+        }
+    ],
+    "outputs": {}
+}

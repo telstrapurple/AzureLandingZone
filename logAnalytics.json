@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "workspaceName"
+      }
+    },
+    "serviceTier": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Standalone",
+        "PerNode",
+        "PerGB2018"
+      ],
+      "metadata": {
+        "description": "Service Tier: PerGB2018 (Subscriptions created April 2018 onwards), Free (legacy billing pre April 2018 so not possible now), Standalone, or PerNode"
+      }
+    },
+    "location": {
+      "type": "string"
+    },
+    "resourceGroupName": {
+      "type": "string"
+    },
+    "subscriptionid": {
+      "type": "string"
+    },
+    "solutionTypes": {
+      "type": "array"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "apiVersion": "2017-03-15-preview",
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "name": "[parameters('workspaceName')]",
+      "location": "[parameters('location')]",
+      "tags": {},
+      "properties": {
+        "sku": {
+          "Name": "[parameters('serviceTier')]"
+        }
+      },
+      "resources": []
+    },
+    {
+      "apiVersion": "2015-11-01-preview",
+      "type": "Microsoft.OperationsManagement/solutions",
+      "location": "[parameters('location')]",
+      "name": "[Concat(parameters('solutionTypes')[copyIndex()], '(', parameters('workspaceName'), ')')]",
+      "id": "[Concat('/subscriptions/', parameters('subscriptionId'), '/resourceGroups/', parameters('resourcegroupName'), '/providers/Microsoft.OperationsManagement/solutions/', parameters('solutionTypes')[copyIndex()], '(', parameters('workspaceName'), ')')]",
+      "properties": {
+        "workspaceResourceId": "[Concat('/subscriptions/', parameters('subscriptionId'), '/resourceGroups/', parameters('resourcegroupName'), '/providers/Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+      },
+      "dependsOn": [
+        "[parameters('workspaceName')]"
+      ],
+      "plan": {
+        "name": "[Concat(parameters('solutionTypes')[copyIndex()], '(', parameters('workspaceName'), ')')]",
+        "product": "[Concat('OMSGallery/', parameters('solutionTypes')[copyIndex()])]",
+        "promotionCode": "",
+        "publisher": "Microsoft"
+      },
+      "copy": {
+        "name": "solutionsCopy",
+        "count": "[length(parameters('solutionTypes'))]"
+      }
+    }
+  ],
+  "outputs": {}
+}

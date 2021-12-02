@@ -1,0 +1,19 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageSettings": {
+            "value": {
+                "storageAccounts": [
+                    {
+                        "name": "<<customerCodeLowerCase>>sydhubsta001",
+                        "location": "Australia East",
+                        "sku": "Standard_LRS",
+                        "kind": "StorageV2",
+                        "httpsOnly": true
+                    }
+                ]
+            }
+        }
+    }
+}

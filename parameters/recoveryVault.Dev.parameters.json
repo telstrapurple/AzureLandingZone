@@ -1,0 +1,42 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logAnalyticsWorkspaceName": {
+            "value":"<<customerCode>>-SYD-HUB-LAW-001"
+        },
+        "logAnalyticsResourceGroup": {
+            "value":"<<customerCode>>-SYD-HUB-ARG-Administration"
+        },
+        "logAnalyticsSubscriptionID": {
+            "value":"<<HubSubscriptionID>>"
+        },
+        "recoverySettings": {
+            "value": {
+                "recoveryVaults": [
+                    {
+                        "vaultName": "<<customerCode>>-SYD-DEV-RSV-001",
+                        "policyName": "<<customerCode>>-CustomBackupPolicy",
+                        "location": "Australia East",
+                        "scheduleRunTimes": [
+                            "2017-01-26T05:30:00Z"
+                        ],
+                        "dailyRetentionDurationCount": 31,
+                        "daysOfTheWeek": [
+                            "Friday"
+                        ],
+                        "weeklyRetentionDurationCount": 5,
+                        "monthlyRetentionDurationCount": 12,
+                        "monthsOfYear": [
+                            "December"
+                        ],
+                        "yearlyRetentionDurationCount": 7,
+                        "daysLogged": 365,
+                        "storageAccount": "<<customerCodeLowerCase>>syddevsta001",
+                        "storageAccountARG": "<<customerCode>>-SYD-DEV-ARG-Administration"
+                    }
+                ]
+            }
+        }
+    }
+}

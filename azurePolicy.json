@@ -1,0 +1,31 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyAssignments": {
+            "type": "array"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policyAssignments",
+            "condition": "[parameters('policyAssignments')[copyIndex()].boolDeploy]",
+            "name": "[concat(parameters('policyAssignments')[copyIndex()].name)]",
+            "apiVersion": "2018-05-01",
+            "copy": {
+                "name": "loopPolicyAssigments",
+                "count": "[length(parameters('policyAssignments'))]"
+            },
+            "properties": {
+                "scope": "[parameters('policyAssignments')[copyIndex()].scope]",
+                "notScopes": "[parameters('policyAssignments')[copyIndex()].notScopes]",
+                "description": "[parameters('policyAssignments')[copyIndex()].description]",
+                "parameters": "[parameters('policyAssignments')[copyIndex()].parameters]",
+                "displayName": "[parameters('policyAssignments')[copyIndex()].displayName]",
+                "policyDefinitionId": "[concat('/providers/Microsoft.Authorization/policyDefinitions/', parameters('policyAssignments')[copyIndex()].policyDefinition)]"
+            }
+        }
+    ],
+    "outputs": {}
+}

@@ -1,0 +1,174 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "keyVaultSettings": {
+            "type": "object",
+            "metadata": {
+                "description": "Object array with all information to create Azure Foundation keyVault information."
+            }
+        },
+        "logAnalyticsWorkspaceName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of log analytics workspace."
+            }
+        },
+        "logAnalyticsResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of log analytics workspace resource group."
+            }
+        },
+        "logAnalyticsSubscriptionID": {
+            "type": "string",
+            "metadata": {
+                "description": "Subscription ID of log analytics workspace."
+            }
+        },
+        "secretName": {
+            "type": "string",
+            "metadata": {
+                "description": "The one secret name to be created."
+            }
+        },
+        "secretValue": {
+            "type": "string",
+            "metadata": {
+                "description": "The one secret phrase to be created."
+            }
+        }
+    },
+    "variables": {
+        "sku": "Standard",
+        "enabledForDeployment": "true",
+        "enabledForTemplateDeployment": "true",
+        "enabledForDiskEncryption": "true",
+        "tenantId": "[subscription().tenantId]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-06-01",
+            "name": "[parameters('keyVaultSettings').keyVaults[copyIndex()].name]",
+            "type": "Microsoft.KeyVault/vaults",
+            "location": "[parameters('keyVaultSettings').keyVaults[copyIndex()].location]",
+            "copy": {
+                "name": "keyVaultLoop",
+                "count": "[length(parameters('keyVaultSettings').keyVaults)]"
+            },
+            "properties": {
+                "enabledForDeployment": "[variables('enabledForDeployment')]",
+                "enabledForTemplateDeployment": "[variables('enabledForTemplateDeployment')]",
+                "enabledForDiskEncryption": "[variables('enabledForDiskEncryption')]",
+                "accessPolicies": [
+                    {
+                        "tenantId": "[subscription().tenantId]",
+                        "objectId": "[parameters('keyVaultSettings').keyVaults[copyIndex()].AzureADGroupObjectID]",
+                        "permissions": {
+                            "keys": [
+                                "encrypt",
+                                "decrypt",
+                                "wrapKey",
+                                "unwrapKey",
+                                "sign",
+                                "verify",
+                                "get",
+                                "list",
+                                "create",
+                                "update",
+                                "import",
+                                "delete",
+                                "backup",
+                                "restore",
+                                "recover",
+                                "purge"
+                            ],
+                            "secrets": [
+                                "get",
+                                "list",
+                                "set",
+                                "delete",
+                                "backup",
+                                "restore",
+                                "recover",
+                                "purge"
+                            ],
+                            "certificates": [
+                                "get",
+                                "list",
+                                "delete",
+                                "create",
+                                "import",
+                                "update",
+                                "managecontacts",
+                                "getissuers",
+                                "listissuers",
+                                "setissuers",
+                                "deleteissuers",
+                                "manageissuers",
+                                "recover",
+                                "purge"
+                            ]
+                        }
+                    }
+                ],
+                "tenantId": "[variables('tenantId')]",
+                "sku": {
+                    "name": "[parameters('keyVaultSettings').keyVaults[copyIndex()].sku]",
+                    "family": "A"
+                }
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.KeyVault/vaults/providers/diagnosticsettings",
+                    "name": "[concat(parameters('keyVaultSettings').keyVaults[copyIndex()].name, '/Microsoft.Insights/service')]",
+                    "apiVersion": "2016-09-01",
+                    "Location": "[parameters('keyVaultSettings').keyVaults[copyIndex()].location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultSettings').keyVaults[copyIndex()].name)]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "storageAccountId": "[resourceId(parameters('logAnalyticsSubscriptionID'), parameters('keyVaultSettings').keyVaults[copyIndex()].storageAccountARG,'Microsoft.Storage/storageAccounts',parameters('keyVaultSettings').keyVaults[copyIndex()].storageAccount)]",
+                        "workspaceId": "[resourceId(parameters('logAnalyticsSubscriptionID'), parameters('logAnalyticsResourceGroup'),'microsoft.operationalinsights/workspaces/', parameters('logAnalyticsWorkspaceName'))]",
+                        "logs": [
+                            {
+                                "category": "AuditEvent",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": true,
+                                    "days": "[parameters('keyVaultSettings').keyVaults[copyIndex()].daysLogged]"
+                                }
+                            }
+                        ],
+                        "metrics": [
+                            {
+                                "category": "AllMetrics",
+                                "enabled": true,
+                                "retentionPolicy": {
+                                    "enabled": true,
+                                    "days": "[parameters('keyVaultSettings').keyVaults[copyIndex()].daysLogged]"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('keyVaultSettings').keyVaults[copyIndex()].name, '/', parameters('secretName'))]",
+            "apiVersion": "2015-06-01",
+            "properties": {
+                "value": "[parameters('secretValue')]"
+            },
+            "dependsOn": [
+                "keyVaultLoop"
+            ],
+            "copy": {
+                "name": "secretkeyVaultLoop",
+                "count": "[length(parameters('keyVaultSettings').keyVaults)]"
+            }
+        }
+    ]
+}

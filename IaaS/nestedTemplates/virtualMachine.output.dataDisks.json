@@ -1,0 +1,75 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmName": {
+            "type": "string"
+        },
+        "numDataDisks": {
+            "type": "int",
+            "maxValue": 4,
+            "metadata": {
+                "description": "This parameter allows the user to select the number of disks they want"
+            }
+        },
+        "sizeOfDataDisk": {
+            "type": "int",
+            "metadata": {
+                "description": "Data Disk Size"
+            }
+        },
+        "dataDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of data disk wanted"
+            }
+        }
+    },
+    "variables": {
+        "diskArray": [
+            {
+                "name": "[concat(parameters('vmName'), '-disk01')]",
+                "lun": 0,
+                "createOption": "Empty",
+                "diskSizeGB": "[parameters('sizeOfDataDisk')]",
+                "managedDisk": {
+                    "storageAccountType": "[parameters('dataDiskType')]"
+                }
+            },
+            {
+                "name": "[concat(parameters('vmName'), '-disk02')]",
+                "lun": 1,
+                "createOption": "Empty",
+                "diskSizeGB": "[parameters('sizeOfDataDisk')]",
+                "managedDisk": {
+                    "storageAccountType": "[parameters('dataDiskType')]"
+                }
+            },
+            {
+                "name": "[concat(parameters('vmName'), '-disk03')]",
+                "lun": 2,
+                "createOption": "Empty",
+                "diskSizeGB": "[parameters('sizeOfDataDisk')]",
+                "managedDisk": {
+                    "storageAccountType": "[parameters('dataDiskType')]"
+                }
+            },
+            {
+                "name": "[concat(parameters('vmName'), '-disk04')]",
+                "lun": 3,
+                "createOption": "Empty",
+                "diskSizeGB": "[parameters('sizeOfDataDisk')]",
+                "managedDisk": {
+                    "storageAccountType": "[parameters('dataDiskType')]"
+                }
+            }
+        ]
+    },
+    "resources": [],
+    "outputs": {
+        "result": {
+            "type": "array",
+            "value": "[take(variables('diskArray'),parameters('numDataDisks'))]"
+        }
+    }
+}

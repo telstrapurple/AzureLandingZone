@@ -1,0 +1,101 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VMs": {
+      "value": [
+        {
+          "name": "<<customerCode>>AZDC01",
+          "location": "australiaeast",
+          "virtualNetworkResourceGroup": "<<customerCode>>-SYD-HUB-ARG-Network",
+          "virtualNetworkName": "<<customerCode>>-SYD-HUB-VNT-10.10.0.0",
+          "subNetName": "Data",
+          "diagnosticsStorageAccountResourceGroup": "<<customerCode>>-SYD-HUB-ARG-Administration",
+          "diagnosticsStorageAccount": "<<customerCode>>sydhubsta001",
+          "logAnalyticsWorkspaceName": "<<customerCode>>-SYD-HUB-LAW-001",
+          "logAnalyticsResourceGroup": "<<customerCode>>-SYD-HUB-ARG-Administration",
+          "recoveryServicesVaultResourceGroup": "<<customerCode>>-SYD-HUB-ARG-Backup",
+          "recoveryServicesVaultName": "<<customerCode>>-SYD-HUB-RSV-001",
+          "recoveryServicesBackupPolicy": "<<customerCode>>-CustomBackupPolicy",
+          "osDiskType": "Standard_LRS",
+          "numberOfDataDisks": 1
+        },
+        {
+          "name": "<<customerCode>>AZDC02",
+          "location": "australiaeast",
+          "virtualNetworkResourceGroup": "<<customerCode>>-SYD-HUB-ARG-Network",
+          "virtualNetworkName": "<<customerCode>>-SYD-HUB-VNT-10.10.0.0",
+          "subNetName": "Data",
+          "diagnosticsStorageAccountResourceGroup": "<<customerCode>>-SYD-HUB-ARG-Administration",
+          "diagnosticsStorageAccount": "<<customerCode>>sydhubsta001",
+          "logAnalyticsWorkspaceName": "<<customerCode>>-SYD-HUB-LAW-001",
+          "logAnalyticsResourceGroup": "<<customerCode>>-SYD-HUB-ARG-Administration",
+          "recoveryServicesVaultResourceGroup": "<<customerCode>>-SYD-HUB-ARG-Backup",
+          "recoveryServicesVaultName": "<<customerCode>>-SYD-HUB-RSV-001",
+          "recoveryServicesBackupPolicy": "<<customerCode>>-CustomBackupPolicy",
+          "osDiskType": "Standard_LRS",
+          "numberOfDataDisks": 1
+        }
+      ]
+    },
+    "adminUsername": {
+      "value": "<<customerCode>>_AzureAdmin"
+    },
+    "adminPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/<<ProdSubscriptionID>>/resourceGroups/<<customerCode>>-SYD-HUB-ARG-Security/providers/Microsoft.KeyVault/vaults/<<customerCode>>-SYD-HUB-AKV-001"
+        },
+        "secretName": "virtualMachinePassword"
+      }
+    },
+    "OSPublisher":{
+      "value": "MicrosoftWindowsServer"
+    },
+    "OSOffer":{
+      "value": "WindowsServer"
+    },
+    "OSVersion": {
+      "value": "2019-Datacenter"
+    },
+    "deployAvailabilitySet": {
+      "value": false
+    },
+    "availabilitySetName": {
+      "value": "<<customerCode>>-SYD-HUB-AVS-001"
+    },
+    "vmSize": {
+      "value": "Standard_D1_v2"
+    },
+    "sizeOfDataDisk": {
+      "value": 32
+    },
+    "dataDiskType":{
+      "value": "Standard_LRS"
+    },
+    "coreSubscriptionID": {
+      "value": "<<ProdSubscriptionID>>"
+    },
+    "dataDiskURI": {
+      "value": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/IaaS/nestedTemplates/virtualMachine.output.dataDisks.json"
+    },
+    "backupVM": {
+      "value": true
+    },
+    "applyHUB": {
+      "value": true
+    },
+    "deployDSC": {
+      "value": true
+    },
+    "dscScript": {
+      "value": "DomainController.ps1"
+    },
+    "dscPackageUri": {
+      "value": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/packages/dsc.DomainController.zip"
+    },
+    "_sasToken": {
+      "value": "<<sasTokenfromPreCreatedStorageAccount>>"
+    }
+  }
+}

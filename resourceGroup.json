@@ -1,0 +1,225 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "subscriptionID": {
+      "type": "string"
+    },
+    "rgName": {
+      "type": "string"
+    },
+    "rgLocation": {
+      "type": "string"
+    },
+    "rgPermissions": {
+      "type": "array"
+    },
+    "rgTags": {
+      "type": "object"
+    },
+    "boolAzureADRBAC": {
+      "type": "bool"
+    },
+    "boolResourceLock": {
+      "type": "bool"
+    },
+    "nestedTemplates": {
+      "type": "object"
+    },
+    "_sasToken": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+    "Contributor": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+    "Reader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+    "resourceTypeTag": {
+      "ResourceType": "[substring(parameters('rgName'), add(lastIndexOf(parameters('rgName'),'-'), 1))]"
+    },
+    "deploymentsLoop1": {
+      "true": "[parameters('nestedTemplates').deploymentsLoop1]",
+      "false": [
+        {
+          "name": "blankTemplate",
+          "template_uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/100-blank-template/azuredeploy.json",
+          "template_parameters_uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/100-blank-template/azuredeploy.parameters.json"
+        }
+      ]
+    },
+    "deploymentsLoop_output1": "[variables('deploymentsLoop1')[string(greater(length(parameters('nestedTemplates').deploymentsLoop1), 0))]]",                          
+    "deploymentsLoop2": {
+      "true": "[parameters('nestedTemplates').deploymentsLoop2]",
+      "false": [
+        {
+          "name": "blankTemplate",
+          "template_uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/100-blank-template/azuredeploy.json",
+          "template_parameters_uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/100-blank-template/azuredeploy.parameters.json"
+        }
+      ]
+    },
+    "deploymentsLoop_output2": "[variables('deploymentsLoop2')[string(greater(length(parameters('nestedTemplates').deploymentsLoop2), 0))]]",
+    "deploymentsLoop3": {
+      "true": "[parameters('nestedTemplates').deploymentsLoop3]",
+      "false": [
+        {
+          "name": "blankTemplate",
+          "template_uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/100-blank-template/azuredeploy.json",
+          "template_parameters_uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/100-blank-template/azuredeploy.parameters.json"
+        }
+      ]
+    },
+    "deploymentsLoop_output3": "[variables('deploymentsLoop3')[string(greater(length(parameters('nestedTemplates').deploymentsLoop3), 0))]]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2018-05-01",
+      "location": "[parameters('rgLocation')]",
+      "name": "[parameters('rgName')]",
+      "properties": {},
+      "tags": "[union(parameters('rgTags'), variables('resourceTypeTag'))]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "condition": "[parameters('boolResourceLock')]",
+      "apiVersion": "2018-05-01",
+      "name": "rgLock",
+      "resourceGroup": "[parameters('rgName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/resourceGroups/', parameters('rgName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/locks",
+              "apiVersion": "2017-04-01",
+              "name": "Cannot delete resource group",
+              "location": "[parameters('rgLocation')]",
+              "properties": {
+                "level": "CanNotDelete",
+                "notes": "Resource Groups should not be deleted. Deployed as part of the Azure Virtual Datacentre."
+              }
+            }
+          ],
+          "outputs": {}
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "condition": "[parameters('boolAzureADRBAC')]",
+      "apiVersion": "2018-05-01",
+      "name": "[concat('rgRBAC', '-', parameters('rgPermissions')[copyIndex()].builtInRoleType)]",
+      "resourceGroup": "[parameters('rgName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/resourceGroups/', parameters('rgName'))]"
+      ],
+      "copy": {
+        "name": "loopRBAC",
+        "count": "[length(parameters('rgPermissions'))]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2017-05-01",
+              "name": "[guid(resourceId('Microsoft.Resources/resourceGroups/', parameters('rgName')), parameters('rgPermissions')[copyIndex()].builtInRoleType)]",
+              "properties": {
+                "roleDefinitionId": "[variables(parameters('rgPermissions')[copyIndex()].builtInRoleType)]",
+                "principalId": "[parameters('rgPermissions')[copyIndex()].roleID]",
+                "scope": "[concat('/subscriptions/', parameters('subscriptionID') , '/resourcegroups/', parameters('rgName'))]"
+              }
+            }
+          ],
+          "outputs": {}
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "[concat('nestedTemplate-Resources-1-', variables('deploymentsLoop_output1')[copyIndex()].name)]",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('rgName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/resourceGroups/', parameters('rgName'))]"
+      ],
+      "copy": {
+        "name": "templateLoop1",
+        "count": "[length(variables('deploymentsLoop_output1'))]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentsLoop_output1')[copyIndex()].template_uri, parameters('_sasToken'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parametersLink": {
+          "uri": "[concat(variables('deploymentsLoop_output1')[copyIndex()].template_parameters_uri, parameters('_sasToken'))]",
+          "contentVersion": "1.0.0.0"
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "[concat('nestedTemplate-Resources-2-', variables('deploymentsLoop_output2')[copyIndex()].name)]",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('rgName')]",
+      "dependsOn": [
+        "templateLoop1"
+      ],
+      "copy": {
+        "name": "templateLoop2",
+        "count": "[length(variables('deploymentsLoop_output2'))]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentsLoop_output2')[copyIndex()].template_uri, parameters('_sasToken'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parametersLink": {
+          "uri": "[concat(variables('deploymentsLoop_output2')[copyIndex()].template_parameters_uri, parameters('_sasToken'))]",
+          "contentVersion": "1.0.0.0"
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "[concat('nestedTemplate-Resources-3-', variables('deploymentsLoop_output3')[copyIndex()].name)]",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('rgName')]",
+      "dependsOn": [
+        "templateLoop1",
+        "templateLoop2"
+      ],
+      "copy": {
+        "name": "templateLoop3",
+        "count": "[length(variables('deploymentsLoop_output3'))]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentsLoop_output3')[copyIndex()].template_uri, parameters('_sasToken'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parametersLink": {
+          "uri": "[concat(variables('deploymentsLoop_output3')[copyIndex()].template_parameters_uri, parameters('_sasToken'))]",
+          "contentVersion": "1.0.0.0"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkSettings": {
+            "value": {
+                "virtualNetworks": [
+                    {
+                        "name": "<<customerCode>>-SYD-HUB-VNT-10.10.0.0",
+                        "location": "Australia East",
+                        "gatewayName": "<<customerCode>>-SYD-HUB-VNG-001",
+                        "gatewaySubnetAddressPrefix": "10.10.7.128/25",
+                        "gatewayPublicIPName": "<<customerCode>>-SYD-HUB-PIP-001",
+                        "addressPrefixes": [
+                            "10.10.0.0/21"
+                        ]
+                    }
+                ]
+            }
+        },
+        "sharedKey": {
+            "value": "<<customerCode>>T3lstr4Purpl3"
+        },
+        "completeS2S":{
+            "value": false
+        },
+        "expressRoute":{
+            "value": true
+        },
+        "vngSKU":{
+            "value": "Standard"
+        }
+    }
+}

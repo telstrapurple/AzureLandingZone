@@ -1,0 +1,49 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionID": {
+            "value": "<<HubSubscriptionID>>"
+        },
+        "rgName": {
+            "value": "<<customerCode>>-SYD-HUB-ARG-Identity"
+        },
+        "rgLocation": {
+            "value": "Australia East"
+        },
+        "rgTags": {
+            "value": {
+                "Environment": "HUB",
+                "Owner": "<<customerCode>> IT"
+            }
+        },
+        "rgPermissions": {
+            "value": [{
+                    "builtInRoleType": "Contributor",
+                    "roleid": "<<azureADGroupID>>"
+                }]
+        },
+        "boolAzureADRBAC": {
+            "value": false
+        },
+        "boolResourceLock": {
+            "value": false
+        },
+        "nestedTemplates": {
+            "value": {
+                "deploymentsLoop1": [
+                    {
+                        "name": "domainControllers",
+                        "template_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/otherTemplates/IaaS/virtualMachine.json",
+                        "template_parameters_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/otherTemplates/IaaS/parameters/virtualMachine.Windows.Hub.DomainControllers.PlainPassword.parameters.json"
+                    }
+                ],
+                "deploymentsLoop2": [],
+                "deploymentsLoop3": []
+            }
+        },
+        "_sasToken": {
+            "value": "<<sasTokenfromPreCreatedStorageAccount>>"
+        }
+    }
+}

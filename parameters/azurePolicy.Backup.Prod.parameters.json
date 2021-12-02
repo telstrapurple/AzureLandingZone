@@ -1,0 +1,28 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyAssignments": {
+            "value": [
+                {
+                    "boolDeploy": false,
+                    "name": "BackupResourcesOnly",
+                    "displayName": "<<customerCode>>-SYD-PRD-ARG-Backup/Backup Resources Only",
+                    "policyDefinition": "Allowed resource types",
+                    "scope": "/subscriptions/<<ProdSubscriptionID>>/resourceGroups/<<customerCode>>-SYD-PRD-ARG-Backup",
+                    "notScopes": [],
+                    "description": "Applies restriction so only Azure Backup resources can be created.",
+                    "parameters": {
+                        "listOfResourceTypesAllowed": {
+                            "value": [
+                                "Microsoft.Backup/BackupVault",
+                                "Microsoft.RecoveryServices/vaults",
+                                "Microsoft.SiteRecovery/SiteRecoveryVault"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

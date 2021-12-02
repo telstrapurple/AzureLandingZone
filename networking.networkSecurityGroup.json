@@ -1,0 +1,77 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Object array with all information to create Azure Foundation neworking information."
+      }
+    },
+    "logAnalyticsWorkspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of log analytics workspace."
+      }
+    },
+    "logAnalyticsResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of log analytics workspace resource group."
+      }
+    },
+    "logAnalyticsSubscriptionID": {
+      "type": "string",
+      "metadata": {
+        "description": "Subscription ID of log analytics workspace."
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2018-07-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[parameters('networkSettings').networkSecurityGroups[copyIndex()].name]",
+      "location": "[parameters('networkSettings').networkSecurityGroups[copyIndex()].location]",
+      "copy": {
+        "name": "NSGLoop",
+        "count": "[length(parameters('networkSettings').networkSecurityGroups)]"
+      },
+      "resources": [
+        {
+          "type": "providers/diagnosticSettings",
+          "name": "[concat('Microsoft.Insights/','diagnostics')]",
+          "dependsOn": [
+            "[concat('Microsoft.Network/networkSecurityGroups/',parameters('networkSettings').networkSecurityGroups[copyIndex()].name)]"
+          ],
+          "apiVersion": "2017-05-01-preview",
+          "properties": {
+            "name": "diagnostics",
+            "storageAccountId": "[resourceId(parameters('logAnalyticsSubscriptionID'), parameters('networkSettings').networkSecurityGroups[copyIndex()].storageAccountARG, 'Microsoft.Storage/storageAccounts', parameters('networkSettings').networkSecurityGroups[copyIndex()].storageAccount)]",
+            "eventHubAuthorizationRuleId": null,
+            "eventHubName": null,
+            "workspaceId": "[resourceId(parameters('logAnalyticsSubscriptionID'), parameters('logAnalyticsResourceGroup'),'microsoft.operationalinsights/workspaces/', parameters('logAnalyticsWorkspaceName'))]",
+            "logs": [
+              {
+                "category": "NetworkSecurityGroupEvent",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": "[parameters('networkSettings').networkSecurityGroups[copyIndex()].daysLogged]",
+                  "enabled": true
+                }
+              },
+              {
+                "category": "NetworkSecurityGroupRuleCounter",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": "[parameters('networkSettings').networkSecurityGroups[copyIndex()].daysLogged]",
+                  "enabled": true
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

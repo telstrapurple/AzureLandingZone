@@ -1,0 +1,79 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyAssignments": {
+            "value": [
+                {
+                    "boolDeploy": false,
+                    "name": "NetworkResourcesOnly",
+                    "displayName": "<<customerCode>>-SYD-DEV-ARG-Network/Network Resources Only",
+                    "policyDefinition": "Allowed resource types",
+                    "scope": "/subscriptions/<<DevSubscriptionID>>/resourceGroups/<<customerCode>>-SYD-DEV-ARG-Network",
+                    "notScopes": [],
+                    "description": "Applies restriction so only Azure Network resources can be created.",
+                    "parameters": {
+                        "listOfResourceTypesAllowed": {
+                            "value": [
+                                "Microsoft.Network/virtualNetworks",
+                                "Microsoft.Network/publicIPAddresses",
+                                "Microsoft.Network/networkInterfaces",
+                                "Microsoft.Network/loadBalancers",
+                                "Microsoft.Network/networkSecurityGroups",
+                                "Microsoft.Network/applicationSecurityGroups",
+                                "Microsoft.Network/routeTables",
+                                "Microsoft.Network/networkWatchers",
+                                "Microsoft.Network/networkWatchers/connectionMonitors",
+                                "Microsoft.Network/networkWatchers/lenses",
+                                "Microsoft.Network/virtualNetworkGateways",
+                                "Microsoft.Network/localNetworkGateways",
+                                "Microsoft.Network/connections",
+                                "Microsoft.Network/applicationGateways",
+                                "Microsoft.Network/locations",
+                                "Microsoft.Network/locations/operations",
+                                "Microsoft.Network/locations/operationResults",
+                                "Microsoft.Network/locations/CheckDnsNameAvailability",
+                                "Microsoft.Network/locations/usages",
+                                "Microsoft.Network/locations/virtualNetworkAvailableEndpointServices",
+                                "Microsoft.Network/locations/availableDelegations",
+                                "Microsoft.Network/locations/supportedVirtualMachineSizes",
+                                "Microsoft.Network/locations/checkAcceleratedNetworkingSupport",
+                                "Microsoft.Network/locations/validateResourceOwnership",
+                                "Microsoft.Network/locations/setResourceOwnership",
+                                "Microsoft.Network/locations/effectiveResourceOwnership",
+                                "Microsoft.Network/operations",
+                                "Microsoft.Network/dnszones",
+                                "Microsoft.Network/dnsOperationResults",
+                                "Microsoft.Network/dnsOperationStatuses",
+                                "Microsoft.Network/dnszones/A",
+                                "Microsoft.Network/dnszones/AAAA",
+                                "Microsoft.Network/dnszones/CNAME",
+                                "Microsoft.Network/dnszones/PTR",
+                                "Microsoft.Network/dnszones/MX",
+                                "Microsoft.Network/dnszones/TXT",
+                                "Microsoft.Network/dnszones/SRV",
+                                "Microsoft.Network/dnszones/SOA",
+                                "Microsoft.Network/dnszones/NS",
+                                "Microsoft.Network/dnszones/CAA",
+                                "Microsoft.Network/dnszones/recordsets",
+                                "Microsoft.Network/dnszones/all",
+                                "Microsoft.Network/trafficmanagerprofiles",
+                                "Microsoft.Network/trafficmanagerprofiles/heatMaps",
+                                "Microsoft.Network/checkTrafficManagerNameAvailability",
+                                "Microsoft.Network/trafficManagerUserMetricsKeys",
+                                "Microsoft.Network/trafficManagerGeographicHierarchies",
+                                "Microsoft.Network/expressRouteCircuits",
+                                "Microsoft.Network/expressRouteServiceProviders",
+                                "Microsoft.Network/applicationGatewayAvailableWafRuleSets",
+                                "Microsoft.Network/applicationGatewayAvailableSslOptions",
+                                "Microsoft.Network/routeFilters",
+                                "Microsoft.Network/bgpServiceCommunities",
+                                "Microsoft.Network/ddosProtectionPlans"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

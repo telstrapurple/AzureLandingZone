@@ -1,0 +1,42 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkSettings": {
+            "value": {
+                "virtualNetworks": [
+                    {
+                        "name": "<<customerCode>>-SYD-HUB-VNT-10.10.0.0",
+                        "location": "Australia East",
+                        "addressPrefixes": [
+                            "10.10.0.0/21"
+                        ],
+                        "subnets": [
+                            {
+                                "name": "Management",
+                                "addressPrefix": "10.10.0.0/24",
+                                "nsg": "Management-NSG"
+                            },
+                            {
+                                "name": "Data",
+                                "addressPrefix": "10.10.1.0/24",
+                                "nsg": "Data-NSG"
+                            },
+                            {
+                                "name": "GatewaySubnet",
+                                "addressPrefix": "10.10.7.128/25",
+                                "nsg": false
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "subnetsURI": {
+            "value": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/networking.output.Subnets.json"
+        },
+        "_sasToken": {
+            "value": "<<sasTokenfromPreCreatedStorageAccount>>"
+        }
+    }
+}

@@ -1,0 +1,36 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logAnalyticsWorkspaceName": {
+            "value":"<<customerCode>>-SYD-HUB-LAW-001"
+        },
+        "logAnalyticsResourceGroup": {
+            "value":"<<customerCode>>-SYD-HUB-ARG-Administration"
+        },
+        "logAnalyticsSubscriptionID": {
+            "value":"<<HubSubscriptionID>>"
+        },
+        "keyVaultSettings": {
+            "value": {
+                "keyVaults": [
+                  {
+                    "name": "<<customerCode>>-SYD-HUB-AKV-001",
+                    "location": "Australia East",
+                    "storageAccount": "<<customerCodeLowerCase>>sydhubsta001",
+                    "storageAccountARG": "<<customerCode>>-SYD-HUB-ARG-Administration",
+                    "sku": "Standard",
+                    "AzureADGroupObjectID": "<<keyVaultAzADGroupId>>",
+                    "daysLogged": 365
+                  }
+                ]
+            }
+        },
+        "secretName": {
+            "value": "virtualMachinePassword"
+        },
+        "secretValue": {
+            "value": "#(<<customerCode>>)VMP3ssw0rdN0tSecur3#"
+        }
+    }
+}

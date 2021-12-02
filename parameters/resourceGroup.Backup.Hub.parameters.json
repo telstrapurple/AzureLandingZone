@@ -1,0 +1,55 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionID": {
+            "value": "<<HubSubscriptionID>>"
+        },
+        "rgName": {
+            "value": "<<customerCode>>-SYD-HUB-ARG-Backup"
+        },
+        "rgLocation": {
+            "value": "Australia East"
+        },
+        "rgTags": {
+            "value": {
+                "Environment": "HUB",
+                "Owner": "<<customerCode>> IT"
+            }
+        },
+        "rgPermissions": {
+            "value": [{
+                    "builtInRoleType": "Contributor",
+                    "roleid": "<<azureADGroupID>>"
+                }]
+        },
+        "boolAzureADRBAC": {
+            "value": false
+        },
+        "boolResourceLock": {
+            "value": false
+        },
+        "nestedTemplates": {
+            "value": {
+                "deploymentsLoop1": [
+                    {
+                        "name": "recoveryVault",
+                        "template_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/recoveryVault.json",
+                        "template_parameters_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/parameters/recoveryVault.Hub.parameters.json"
+                    }
+                ],
+                "deploymentsLoop2": [
+                    {
+                        "name": "azurePolicy",
+                        "template_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/azurePolicy.json",
+                        "template_parameters_uri": "https://<<preCreatedStorageAccount>>.blob.core.windows.net/<<preCreatedStorageContainer>>/parameters/azurePolicy.Backup.Hub.parameters.json"
+                    }
+                ],
+                "deploymentsLoop3": []
+            }
+        },
+        "_sasToken": {
+            "value": "<<sasTokenfromPreCreatedStorageAccount>>"
+        }
+    }
+}
